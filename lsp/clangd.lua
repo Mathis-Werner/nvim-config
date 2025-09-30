@@ -1,5 +1,5 @@
 return {
-  cmd = { 'clangd', '--background-index' },
-  root_markers = { 'compile_commands.json', 'compile_flags.txt' },
+  cmd = { 'clangd' },
+  root_markers = { '.git' },
   filetypes = { 'c', 'cpp' },
 }
