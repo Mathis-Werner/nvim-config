@@ -12,7 +12,7 @@ vim.g.mapleader= " "
 
 -- Realitve and absolute line numbers
 vim.opt.number = true
---vim.opt.relativenumber = true
+vim.opt.relativenumber = true
 
 -- Search
 vim.opt.ignorecase = true

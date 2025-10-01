@@ -1,4 +1,6 @@
 -- lspconfig
+------------------------------------------------------------------
+-- Diagnostics
 local diagnostic_icons = {
   [vim.diagnostic.severity.ERROR] = "",
   [vim.diagnostic.severity.WARN]  = "",
@@ -8,37 +10,21 @@ local diagnostic_icons = {
 
 local diagnostics = {
   underline = true,
+  virtual_lines = true,
   update_in_insert = false,
-  virtual_text = {
-    spacing = 4,
-    source = "if_many",
-    prefix = function(diagnostic)
-      return diagnostic_icons[diagnostic.severity] or "●"
-    end,
-  },
+  -- virtual_text = {
+  --   spacing = 4,
+  --   source = "if_many",
+  --   prefix = function(diagnostic)
+  --     return diagnostic_icons[diagnostic.severity] or "●"
+  --   end,
+  -- },
   severity_sort = true,
   signs = {
     text = diagnostic_icons,
   },
 }
 
-local capabilities = vim.lsp.protocol.make_client_capabilities()
-capabilities.workspace = {
-  fileOperations = {
-    didRename = true,
-    willRename = true,
-  },
-}
-
-local inlay_hints = {
-  enabled = true,
-  exclude = { "vue" },
-}
-local codelens = {
-  enabled = false,
-}
-
--- Setup diagnostics
 vim.diagnostic.config(diagnostics)
 
 -- Define signs
@@ -57,6 +43,25 @@ for severity, icon in pairs(diagnostics.signs.text) do
   })
 end
 
+-- Capabilities
+local capabilities = vim.lsp.protocol.make_client_capabilities()
+capabilities.workspace = {
+  fileOperations = {
+    didRename = true,
+    willRename = true,
+  },
+}
+
+-- Misc
+local inlay_hints = {
+  enabled = true,
+  exclude = { "vue" },
+}
+local codelens = {
+  enabled = false,
+}
+
+-- LSP init
 -- Define your custom on_attach function here
 vim.api.nvim_create_autocmd('LspAttach', {
   callback = function(ev)
