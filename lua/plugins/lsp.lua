@@ -77,10 +77,15 @@ return {
       end
 
       -- Define your custom on_attach function here
-      local function on_attach(client, bufnr)
+      vim.api.nvim_create_autocmd('LspAttach', {
+        callback = function(ev)
+          local client = vim.lsp.get_client_by_id(ev.data.client_id)
+          if client:supports_method('textDocument/completion') then
+            vim.lsp.completion.enable(true, client.id, ev.buf, { autotrigger = true })
+          end
         -- Example keymap setup
         local map = function(mode, lhs, rhs, desc)
-          vim.keymap.set(mode, lhs, rhs, { buffer = bufnr, desc = desc })
+          vim.keymap.set(mode, lhs, rhs, { buffer = ev.buf, desc = desc })
         end
 
         map("n", "gd", vim.lsp.buf.definition, "Go to definition")
@@ -90,9 +95,9 @@ return {
 
         -- Inlay hints
         if opts.inlay_hints.enabled and vim.lsp.inlay_hint then
-          local ft = vim.bo[bufnr].filetype
+          local ft = vim.bo[ev.buf].filetype
           if not vim.tbl_contains(opts.inlay_hints.exclude, ft) then
-            vim.lsp.inlay_hint.enable(true, { bufnr = bufnr })
+            vim.lsp.inlay_hint.enable(true, { ev.buf})
           end
         end
 
@@ -100,31 +105,14 @@ return {
         if opts.codelens.enabled and vim.lsp.codelens then
           vim.lsp.codelens.refresh()
           vim.api.nvim_create_autocmd({ "BufEnter", "CursorHold", "InsertLeave" }, {
-            buffer = bufnr,
+            buffer = ev.buf,
             callback = vim.lsp.codelens.refresh,
           })
         end
-      end
-
-      vim.api.nvim_create_autocmd('LspAttach', {
-        callback = function(ev)
-          local client = vim.lsp.get_client_by_id(ev.data.client_id)
-          if client:supports_method('textDocument/completion') then
-            vim.lsp.completion.enable(true, client.id, ev.buf, { autotrigger = true })
-          end
         end,
       })
 
       -- Setup all servers
-      local servers = opts.servers or {}
-      for server, server_opts in pairs(servers) do
-        if server_opts ~= false then
-          server_opts = server_opts == true and {} or server_opts
-          server_opts.capabilities = vim.tbl_deep_extend("force", {}, opts.capabilities or {}, server_opts.capabilities or {})
-          server_opts.on_attach = on_attach
-          vim.lsp.config({ "lua", "clangd" }, server_opts)
-        end
-      end
       vim.lsp.enable({ "lua", "clangd" })
     end,
   },
