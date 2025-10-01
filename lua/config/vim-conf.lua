@@ -17,3 +17,9 @@ vim.opt.number = true
 -- Search
 vim.opt.ignorecase = true
 vim.opt.smartcase = true
+
+-- Add noselect to completeopt
+vim.cmd("set completeopt+=noselect")
+
+-- Enable rounded borders in floating windows
+vim.o.winborder = 'rounded'
