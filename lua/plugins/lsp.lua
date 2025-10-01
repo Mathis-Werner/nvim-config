@@ -5,7 +5,6 @@ return {
     event = "BufReadPre",
     dependencies = {
       "williamboman/mason.nvim",
-      { "williamboman/mason-lspconfig.nvim", config = function() end },
     },
     opts = function()
       local diagnostic_icons = {
@@ -39,40 +38,9 @@ return {
         },
       }
 
-      local servers = {
-        lua_ls = {
-          settings = {
-            Lua = {
-              workspace = {
-                checkThirdParty = false,
-              },
-              codeLens = {
-                enable = true,
-              },
-              completion = {
-                callSnippet = "Replace",
-              },
-              doc = {
-                privateName = { "^_" },
-              },
-              hint = {
-                enable = true,
-                setType = false,
-                paramType = true,
-                paramName = "Disable",
-                semicolon = "Disable",
-                arrayIndex = "Disable",
-              },
-            },
-          },
-        },
-        stylua = false,
-      }
-
       return {
         diagnostics = diagnostics,
         capabilities = capabilities,
-        servers = servers,
         inlay_hints = {
           enabled = true,
           exclude = { "vue" },
@@ -138,6 +106,15 @@ return {
         end
       end
 
+      vim.api.nvim_create_autocmd('LspAttach', {
+        callback = function(ev)
+          local client = vim.lsp.get_client_by_id(ev.data.client_id)
+          if client:supports_method('textDocument/completion') then
+            vim.lsp.completion.enable(true, client.id, ev.buf, { autotrigger = true })
+          end
+        end,
+      })
+
       -- Setup all servers
       local servers = opts.servers or {}
       for server, server_opts in pairs(servers) do
@@ -145,10 +122,10 @@ return {
           server_opts = server_opts == true and {} or server_opts
           server_opts.capabilities = vim.tbl_deep_extend("force", {}, opts.capabilities or {}, server_opts.capabilities or {})
           server_opts.on_attach = on_attach
-          --vim.lsp.config(server, server_opts)
-          vim.lsp.enable({ "lua" })
+          vim.lsp.config({ "lua", "clangd" }, server_opts)
         end
       end
+      vim.lsp.enable({ "lua", "clangd" })
     end,
   },
 
